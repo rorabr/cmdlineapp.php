@@ -24,11 +24,11 @@ LICENSE for information on the software availability and distribution.
 
 ## Instalation
 
-Clone or download this repository and run `make install`.
+Clone or download this repository and run `sudo make install`.
 
 ## Test and Example
 
-Run the test.php program in the test dir.
+Run the test.php program in the src dir.
 
 ## Syntax specification
 
@@ -56,7 +56,7 @@ int | `^-?\d+$` | 13
 float | `^-?\d+(\.\d+)?$` | 0.55
 dateymd | `^\d\d\d\d-\d\d-\d\d$` | 1970-01-01
 datedmy | `/^\d\d\/\d\d\/\d\d\d\d$/` | 01/02/1970
-flag | `^true$|^false$` | true
+flag | `^true$\|^false$` | true
 url | `/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\(\)\*\+,;=.]+$/` | http://duckduckgo.com
 
 ### Syntax example (as shown in the test.php program)
