@@ -10,9 +10,9 @@ class CmdlineApp {
   protected $syntax = [];
   protected $opt = [];
   protected $log;
+  protected $configFilename;
   private $scriptFilename;
   private $scriptPath = "";
-  private $configFilename;
   private $configFilepath = [];
   private $optmeta = [];
 
@@ -114,7 +114,7 @@ class CmdlineApp {
     /* check the argument list and set undefined (but allowed) values */
     for ($i = 0; $i < count($this->syntax); $i++) {
       if (! isset($this->syntax[$i]["type"])) throw new Exception("argument \"" . $this->syntax[$i]["long"] . "\" does not have a type");
-      if (! isset($this->typeRegExp[$this->syntax[$i]["type"]])) throw new Exception("argument \"" . $this->syntax[$i]["long"] . "\" does not have a valid type");
+      if (substr($this->syntax[$i]["type"], 0, 1) != "/" && ! isset($this->typeRegExp[$this->syntax[$i]["type"]])) throw new Exception("argument \"" . $this->syntax[$i]["long"] . "\" does not have a valid type");
       if (! isset($this->syntax[$i]["long"])) throw new Exception("all arguments must have a long name");
       if (! isset($this->syntax[$i]["array"])) $this->syntax[$i]["array"] = 0;
       if (preg_match('/[^a-zA-Z0-9_\-\?\:]/', $this->syntax[$i]["long"])) throw new Exception("invalid long argument name \"" . $this->syntax[$i]["long"] . "\"");
@@ -207,25 +207,18 @@ class CmdlineApp {
     return(isset($this->opt[$var]) ? $this->opt[$var] : null);
   }
 
-  /** HTTP GET something */
-  function webget($url) {
-    if (function_exists("curl_init")) {
-      $curl = curl_init();
-      curl_setopt($curl, CURLOPT_URL, $url);
-      curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-      $result = curl_exec($curl);
-      curl_close($curl);
-      if ($result === false) {
-        $e = error_get_last();
-        throw new Exception("error downloading $url: " . $e["message"]);
-      }
-      return($result);
-    } else {
-      $output = array();
-      $ret = 0;
-      exec("curl --silent --connect-timeout 3 $url", $output, $ret);
-      return(join("", $output));
-    }
+  /** HTTP GET something (could be a local file) */
+  function webget($url, $headers = "", $limit = 65536) {
+    /* use key 'http' even if you send the request to https://... */
+    $options = array(
+      'http' => array(
+        'header'  => $headers,
+        'method'  => 'GET'
+      )
+    );
+    $context  = stream_context_create($options);
+    $result = file_get_contents($url, false, $context, 0, $limit);
+    return($result);
   }
 
   /** Print something out if either verbose or debug is set */
