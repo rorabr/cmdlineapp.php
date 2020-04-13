@@ -17,6 +17,6 @@ check:
 	$(eval group := $(shell ls -lad ${dst} | awk '{print $$4}'))
 	@echo "Instalation checks ok"
 
-install:
+install: check
 	install -D --mode=0644 --owner=${owner} --group=${group} ${src} ${dst}/rora/${f}
 	@echo "File ${f} installed on ${dst}"
