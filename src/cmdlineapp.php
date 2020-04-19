@@ -138,7 +138,7 @@ class CmdlineApp {
       if (! isset($this->opt)) {
         $this->syntax("Syntax error", 1);
       }
-      if ($this->opt["debug"]) {
+      if (isset($this->opt["debug"]) && $this->opt["debug"]) {
         $this->debug($this->opt, "argv");
       }
     } catch (Exception $e) {
