@@ -1,8 +1,8 @@
 <?php
-
 /** Simple class to help implement command-line applications in PHP - RORA - Montreal
  * created by Rodrigo Antunes (rorabr@github) https://rora.com.br - 2018-08-30
  * https://github.com/rorabr/cmdlineapp.php */
+namespace rora;
 
 /** Class to be extended by the app */
 class CmdlineApp {
@@ -275,6 +275,47 @@ class CmdlineApp {
     }
     pclose($handle);
     return($out);
+  }
+
+  /** Execute a subprocess using pipes to grab stdout and stderr
+    * source: https://www.php.net/manual/en/function.proc-open.php */
+  function runProcess($cmd, $stdin = null, $cwd = null, $env = null, $limit = 32768, $timeout = 0) {
+    $descriptor = [0 => array("pipe", "r"), 1 => array("pipe", "w"), 2 => array("pipe", "w")];
+    $pipes = [];
+    $result = ["startTime" => microtime(true), "out" => "", "err" => ""];
+    $process = proc_open($cmd, $descriptor, $pipes, $cwd, $env);
+    if (is_resource($process)) {
+      fwrite($pipes[0], $stdin);
+      fclose($pipes[0]);
+      do {
+        $reads   = [];
+        foreach ([1, 2] as $i) if (! feof($pipes[$i])) array_push($reads, $pipes[$i]);
+        $writes  = NULL;
+        $excepts = NULL;
+        $nreads = count($reads);
+        if ($nreads > 0) {
+          if (false === ($num = stream_select($reads, $writes, $excepts, $timeout))) {
+            return(false);
+          } elseif ($num > 0) {
+            foreach ($reads as $stm) {
+              foreach ([1, 2] as $i) {
+                if ($stm == $pipes[$i]) {
+                  $result[$i == 1 ? "out" : "err"] .= fread($pipes[$i], 32768);
+                }
+              }
+            }
+          }
+        }
+      } while ($nreads > 0);
+      fclose($pipes[1]);
+      fclose($pipes[2]);
+      $return_value = proc_close($process);
+      $result["exitcode"] = $return_value;
+      $result["stopTime"] = microtime(true);
+    } else {
+      print "proc error\n";
+    }
+    return($result);
   }
 }
 
