@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 /** Test program for the cmdlineapp.php PHP source */
-require("cmdlineapp.php");
+require_once("rora/cmdlineapp.php");
 
-class TestApp extends CmdlineApp {
+class TestApp extends rora\CmdlineApp {
   var $syntax = [
     ["long" => "string", "short" => "s", "type" => "string", "required" => 1, "help" => "A required string"],
     ["long" => "int", "short" => "i", "type" => "integer", "array" => 1, "required" => 0, "help" => "An integer"],
